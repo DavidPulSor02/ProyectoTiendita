@@ -1,70 +1,73 @@
 const saleModel = require('../models/saleModel');
 const saleDetailsModel = require('../models/saleDetailsModel');
 
-// Obtener todas las ventas
-const getAllSales = async (req, res) => {
-    try {
-        const sales = await saleModel.getSales();
-        res.status(200).json(sales);
-    } catch (error) {
-        res.status(500).json({ error: 'Error al obtener ventas' });
-    }
-};
-
-// Obtener una venta por ID
-const getSale = async (req, res) => {
-    try {
-        const sale = await saleModel.getSaleById(req.params.id);
-        if (!sale) {
-            return res.status(404).json({ error: 'Venta no encontrada' });
+class sales {
+    static async getAllSales(req, res) {
+        try {
+            const sales = await saleModel.getfindAll();
+            res.status(200).json(sales);
+        } catch (error) {
+            res.status(500).json({ error: 'Error al obtener ventas' });
         }
-        res.status(200).json(sale);
-    } catch (error) {
-        res.status(500).json({ error: 'Error al obtener la venta' });
-    }
-};
+    };
 
-// Crear una nueva venta
-const createSale = async (req, res) => {
-    try {
-        const { total, details } = req.body;
-        const newSale = await saleModel.createSale(total);
-        let detailsSaved = [];
-
-        for (let element of details) {
-            const det = await saleDetailsModel.createSaleDetail(newSale.id, element.product_name, element.quantity, element.price);
-            detailsSaved.push(det);
+    // Obtener una venta por ID
+    static async getSale(req, res) {
+        try {
+            const sale = await saleModel.getSaleById(req.params.id);
+            if (!sale) {
+                return res.status(404).json({ error: 'Venta no encontrada' });
+            }
+            res.status(200).json(sale);
+        } catch (error) {
+            res.status(500).json({ error: 'Error al obtener la venta' });
         }
+    };
 
-
-        res.status(201).json({ sale: newSale, detail: detailsSaved });
-    } catch (error) {
-        res.status(500).json({ error: 'Error al crear la venta' });
-    }
-};
-
-// Actualizar una venta
-const updateSale = async (req, res) => {
-    try {
-        const { total } = req.body;
-        const updatedSale = await saleModel.updateSale(req.params.id, total);
-        if (!updatedSale) {
-            return res.status(404).json({ error: 'Venta no encontrada' });
+    // Crear una nueva venta
+    static async createSale(req, res) {
+        try {
+            const { date, nombre_producto, cantidad, precio } = req.body;
+            const sale = await saleModel.createSale({ date, nombre_producto, cantidad, precio });
+            res.status(201).json({ data: sale, message: 'venta creada correctamente' });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
         }
-        res.status(200).json(updatedSale);
-    } catch (error) {
-        res.status(500).json({ error: 'Error al actualizar la venta' });
     }
-};
 
-// Eliminar una venta
-const deleteSale = async (req, res) => {
-    try {
-        await saleModel.deleteSale(req.params.id);
-        res.status(204).json();
-    } catch (error) {
-        res.status(500).json({ error: 'Error al eliminar la venta' });
+    // Actualizar una venta
+    static async update(req, res) {
+        try {
+            const sale = await saleModel.updateSales(req.params.id, req.body);
+            if (!sale) {
+                return res.status(404).json({ data: user, message: 'venta no encontrado' });
+            }
+            res.json({ message: 'venta actualizado correctamente' });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     }
-};
 
-module.exports = { getAllSales, getSale, createSale, updateSale, deleteSale };
+    // Eliminar una venta
+    static async deletedSale(req, res) {
+        try {
+            // Intentar eliminar la venta
+            const deletedSale = await saleModel.delete(req.params.id);
+
+            // Verificar si la venta fue encontrada y eliminada
+            if (!deletedSale) {
+                // Enviar respuesta 404 si no se encuentra la venta
+                return res.status(404).json({ error: 'Venta no encontrada' });
+            }
+
+            // Si la venta fue eliminada correctamente, enviar respuesta 204 (No Content)
+            return res.status(204).send();  // Enviar solo una respuesta y detener el flujo
+        } catch (error) {
+            // Enviar solo una respuesta de error
+            return res.status(500).json({ error: 'Error al eliminar la venta' });
+        }
+    }
+
+
+}
+module.exports = sales;

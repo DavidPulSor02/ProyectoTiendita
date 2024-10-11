@@ -1,18 +1,19 @@
-const Categoria = require('../models/categoriaModel');
+const Categoria = require('../models/categoriasModel');
 
-const categoriaController = {
-    getAll: async (req, res) => {
+class categoriaController {
+    static async getAllCategoria(req, res) {
         try {
-            const categorias = await Categoria.getAll();
-            res.status(200).json(categorias);
-        } catch (err) {
-            res.status(500).json({ error: 'Error al obtener las categorías' });
+            const categoria = await Categoria.getAll();
+            res.json({ categoria });
         }
-    },
+        catch (error) {
+            res.status(500).json({ error: error.message });
 
-    getById: async (req, res) => {
+        }
+    }
+    static async getById(req, res) {
         try {
-            const categoria = await Categoria.getById(req.params.id);
+            const categoria = await Categoria.findById(req.params.id);
             if (!categoria) {
                 return res.status(404).json({ message: 'Categoría no encontrada' });
             }
@@ -20,9 +21,9 @@ const categoriaController = {
         } catch (err) {
             res.status(500).json({ error: 'Error al obtener la categoría' });
         }
-    },
+    }
 
-    create: async (req, res) => {
+    static async create(req, res) {
         try {
             const { Nom_Categoria } = req.body;
             const nuevaCategoria = await Categoria.create(Nom_Categoria);
@@ -30,9 +31,9 @@ const categoriaController = {
         } catch (err) {
             res.status(500).json({ error: 'Error al crear la categoría' });
         }
-    },
+    }
 
-    update: async (req, res) => {
+    static async update(req, res) {
         try {
             const { Nom_Categoria } = req.body;
             const categoriaActualizada = await Categoria.update(req.params.id, Nom_Categoria);
@@ -43,9 +44,9 @@ const categoriaController = {
         } catch (err) {
             res.status(500).json({ error: 'Error al actualizar la categoría' });
         }
-    },
+    }
 
-    delete: async (req, res) => {
+    static async delete(req, res) {
         try {
             const categoriaEliminada = await Categoria.delete(req.params.id);
             if (!categoriaEliminada) {

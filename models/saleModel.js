@@ -1,59 +1,62 @@
 const pool = require('../config/config');
 
-// Obtener los detalles de una venta por el ID de la venta
-const getSaleDetailsBySaleId = async (saleId) => {
-    const { rows } = await pool.query('SELECT * FROM sale_details WHERE sale_id = $1', [saleId]);
-    return rows;
-};
-
-// Crear un nuevo detalle de venta
-const createSaleDetail = async (saleId, productName, quantity, price) => {
-    const { rows } = await pool.query(
-        'INSERT INTO sale_details (sale_id, product_name, quantity, price) VALUES ($1, $2, $3, $4) RETURNING *',
-        [saleId, productName, quantity, price]
-    );
-    return rows[0];
-};
-
-// Eliminar un detalle de venta por ID
-const deleteSaleDetail = async (id) => {
-    await pool.query('DELETE FROM sale_details WHERE id = $1', [id]);
-};
+class SaleModel {
 
 
-// Consultar todas las ventas
-const getSales = async () => {
-    const { rows } = await pool.query('SELECT * FROM sales ORDER BY date DESC');
-    return rows;
-};
+    // Obtener los detalles de una venta por el ID de la venta
+    static async getSaleDetailsBySaleId(saleId) {
+        const { rows } = await pool.query('SELECT * FROM sales WHERE sale_id = $1', [saleId]);
+        return rows;
+    };
+    //consultar todo 
+    static async getfindAll() {
+        const { rows } = await pool.query('SELECT * FROM sales');
+        return rows;
+    };
 
-// Obtener una venta por ID
-const getSaleById = async (id) => {
-    const { rows } = await pool.query('SELECT * FROM sales WHERE id = $1', [id]);
-    return rows[0];
-};
+    // Crear un nuevo detalle de venta
+    static async createSale(data) {
+        const { date, nombre_producto, cantidad, precio } = data;
+        const result = await pool.query(
+            'INSERT INTO sales (date, nombre_producto, cantidad, precio) VALUES ($1, $2, $3, $4) RETURNING *',
+            [date, nombre_producto, cantidad, precio]
+        );
+        return result.rows[0];
+    };
 
-// Crear una nueva venta
-const createSale = async (total) => {
-    const result = await pool.query(
-        'INSERT INTO sales (total) VALUES ($1) RETURNING *',
-        [total]
-    );
-    return result.rows[0];
-};
+    static async updateSales(id, data) {
+        const { date, nombre_producto, cantidad, precio } = data;
+        const result = await pool.query(
+            'UPDATE sales SET date = $1, nombre_producto = $2, cantidad = $3,precio = $4 , update_at = CURRENT_TIMESTAMP, delete_at = NULL WHERE id = $5 RETURNING *',
+            [date, nombre_producto, cantidad, precio, id]
+        );
+        return result.rows[0];
+    };
 
-// Actualizar una venta
-const updateSale = async (id, total) => {
-    const { rows } = await pool.query(
-        'UPDATE sales SET total = $1 WHERE id = $2 RETURNING *',
-        [total, id]
-    );
-    return rows[0];
-};
 
-// Eliminar una venta
-const deleteSale = async (id) => {
-    await pool.query('DELETE FROM sales WHERE id = $1', [id]);
-};
 
-module.exports = { getSales, getSaleById, createSale, updateSale, deleteSale };
+    // Consultar todas las ventas
+    static async getSales() {
+        const { rows } = await pool.query('SELECT * FROM sales');
+        return rows;
+    };
+
+    // Obtener una venta por ID
+    static async getSaleById(id) {
+        const { rows } = await pool.query('SELECT * FROM sales WHERE id = $1', [id]);
+        return rows[0];
+    };
+
+
+    // Actualizar una venta
+
+
+
+
+    // Eliminar una venta
+    static async delete(id) {
+        const result = await pool.query(' UPDATE sales SET delete_at = NOW() WHERE id = $1 AND delete_at IS NULL RETURNING *', [id]);
+        return result.rows[0];
+    }
+}
+module.exports = SaleModel;
